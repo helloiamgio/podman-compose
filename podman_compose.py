@@ -1891,7 +1891,9 @@ def compose_push(compose, args):
             continue
         if services and cnt["_service"] not in services:
             continue
-        compose.podman.run([], "push", [cnt["image"]], sleep=0)
+        exit_code = compose.podman.run([], "push", [cnt["image"]], sleep=0).wait()
+        if (not getattr(args, "ignore_push_failures", None)) and 0 != exit_code:
+            sys.exit(exit_code)
 
 
 def build_one(compose, args, cnt):
@@ -1949,7 +1951,9 @@ def build_one(compose, args, cnt):
             )
         )
     build_args.append(ctx)
-    compose.podman.run([], "build", build_args, sleep=0)
+    exit_code = compose.podman.run([], "build", build_args, sleep=0).wait()
+    if 0 != exit_code:
+        sys.exit(exit_code)
 
 
 @cmd_run(podman_compose, "build", "build stack images")
@@ -2771,7 +2775,7 @@ def compose_push_parse(parser):
     parser.add_argument(
         "--ignore-push-failures",
         action="store_true",
-        help="Push what it can and ignores images with push failures. (not implemented)",
+        help="Push what it can and ignores images with push failures.",
     )
     parser.add_argument(
         "services", metavar="services", nargs="*", help="services to push"
