@@ -38,6 +38,7 @@ setup(
     install_requires=[
         "pyyaml",
         "python-dotenv",
+        "semantic-version",
     ],
     extras_require={
         "devel": [
